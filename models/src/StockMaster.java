@@ -9,13 +9,17 @@ public class StockMaster {
 //    private int producrId;
     private final int batchId;
     private static int autoGenrateId=100;
-    private final int quantity;
+    private int quantity;
     private Money mrp;
     private Money sellingPrice;
     private LocalDate expiryDate;
     private Supplier supplier;
 
     public StockMaster(int quantity, LocalDate expiryDate,Variant variant,Money mrp,Money sellingPrice) {
+
+        if(quantity<=0){
+            throw new IllegalArgumentException("negative stock initialization 0");
+        }
 
 //        if (variant == null) {
 //            throw new IllegalArgumentException("Should have variant");
@@ -47,6 +51,10 @@ public class StockMaster {
 
     public Money getMrp(){
         return mrp;
+    }
+
+    public void reduceQuantity(int q){
+        this.quantity-=q;
     }
 
     public LocalDate getExpireDate(){

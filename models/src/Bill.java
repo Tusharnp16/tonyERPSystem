@@ -108,7 +108,7 @@ public class Bill {
 
 
 
-    public class PurchaseItem {
+    public static class PurchaseItem {
 
         private int purchaseId;
         private static int autoGenrateId = 100;
