@@ -4,7 +4,7 @@ import java.util.List;
 public class Supplier {
 
     private final int supplierId;
-    private static int autoGenrateId=100;
+    private static int autoGenrateId=1;
     private final String contact;
     private final String contactNumber;
     private final List<StockMaster> batches=new ArrayList<>();
@@ -29,7 +29,8 @@ public class Supplier {
 
     @Override
     public String toString() {
-        return  contact +
-                ", Contact Number = " + contactNumber;
+        return ", Supplier ID : " + supplierId +
+                ", Supplier Name : " + contact +
+                 ", Contact Number : " + contactNumber;
     }
 }

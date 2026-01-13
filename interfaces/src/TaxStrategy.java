@@ -1,3 +1,4 @@
-//public interface TaxStrategy {
-//    Money calulateGST(Money amount);
-//}
+public interface TaxStrategy {
+    Money calulateGST(Money amount);
+    String getGST();
+}

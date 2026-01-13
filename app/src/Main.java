@@ -39,14 +39,13 @@ class Main {
             return;
         }
 
-        System.out.println("Select Product for variant : ");
+        System.out.println("Select ProductId for variant : ");
         for(Product p : productList){
             System.out.println("Product Id : " + p.getProductId() + " Product Name : " + p.getProductName());
         }
 
         System.out.println("Enter Product Id : ");
         int enterId = safeInt();
-
 
         Product selectedProduct = null;
         for(Product p: productList){
@@ -133,9 +132,9 @@ class Main {
         sc.nextLine();
 
     //    Supplier supplier = supplierList.get(0);
-        int i=1;
+
         for(Supplier s : supplierList){
-            System.out.println("No : " + i++ + " " +  s);
+            System.out.println(s);
         }
 
         System.out.println("Select Supplier : ");
@@ -146,9 +145,21 @@ class Main {
             return;
         }
 
+        System.out.println("Select GST Method : ");
+        System.out.println("1.IGST \n2.CGST ");
+        int gst=sc.nextInt();
+
+        TaxStrategy strategy;
+
+        if(gst==1){
+            strategy=new IGSTStrategy();
+        }else{
+            strategy=new CGSTStrategy();
+        }
+
         Supplier s=supplierList.get(index);
 
-        Bill bill = new Bill(s);
+        Bill bill = new Bill(s,strategy);
         billList.add(bill);
 
         System.out.println("New Bill Created : ");
@@ -164,11 +175,14 @@ class Main {
         }
 
         System.out.println("Available Bills:");
-        for (int i = 0; i < billList.size(); i++) {
-            System.out.println((i + 1) + ". Bill ID: " + billList.get(i).display());
+//        for (int i = 0; i < billList.size(); i++) {
+//            System.out.println((i + 1) + ". Bill ID: " + billList.get(i).ge);
+//        }
+//
+        for(Bill b: billList){
+            System.out.println("Bill Id : " + b.getBillId() + " Supplier Name : " + b.getSupplierName() + " Supplier Contact : "  + b.getSupplieContact());
         }
-
-        System.out.print("Choose Bill: ");
+        System.out.print("Choose Bill ID: ");
         int bIndex = safeInt() - 1;
 
         if (bIndex < 0 || bIndex >= billList.size()) {
@@ -283,7 +297,7 @@ class Main {
     public static void main(String[] args) {
 
         supplierList.add(new Supplier("Tony Textile", "7984569840"));
-        supplierList.add(new Supplier("Hardik Raw Manufecturing Unit","1234567890"));
+        supplierList.add(new Supplier("Hardik Raw Manu fecturing Unit","1234567890"));
 
 
         int ch;
