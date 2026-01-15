@@ -1,3 +1,5 @@
+import org.jetbrains.annotations.Nullable;
+
 import javax.lang.model.type.NullType;
 import java.rmi.MarshalledObject;
 import java.time.LocalDate;
@@ -14,7 +16,7 @@ class Main {
     private static List<StockMaster> stockList = new ArrayList<>();
     private static List<Supplier> supplierList = new ArrayList<>();
     private static List<Bill> billList = new ArrayList<>();
-    private static StoreInventory storeInventory=new StoreInventory();
+    private static StoreInventory storeInventory = new StoreInventory();
 
 
     public static void createProduct() {
@@ -33,9 +35,9 @@ class Main {
         System.out.println("Product Added : " + newPrd);
 
         System.out.println("Wants to create variant of it? (Y/N)");
-        String s=sc.next();
+        String s = sc.next();
 
-        if(s.toUpperCase().equals("Y")){
+        if (s.toUpperCase().equals("Y")) {
             createVariant(newPrd);
         }
     }
@@ -48,9 +50,10 @@ class Main {
             return;
         }
 
-        int enterId=0;
+        Product selectedProduct = prd;
+        int enterId;
 
-        if(prd==null) {
+        if (selectedProduct == null) {
             System.out.println("Select ProductId for variant : ");
             for (Product p : productList) {
                 System.out.println("Product Id : " + p.getProductId() + " Product Name : " + p.getProductName());
@@ -58,23 +61,17 @@ class Main {
 
             System.out.println("Enter Product Id : ");
             enterId = safeInt();
-        }else{
-            enterId=prd.getProductId();
-        }
 
-
-            Product selectedProduct = null;
-            for (Product p : productList) {
-                if (p.getProductId() == enterId) {
-                    selectedProduct = p;
-                }
-            }
+            selectedProduct=productList.stream()
+                    .filter(p -> p.getProductId()==enterId)
+                    .findFirst()
+                    .orElse(null);
 
             if (selectedProduct == null) {
-                System.out.println("There is no such product avilable");
+                System.out.println("No such product available.");
                 return;
             }
-
+        }
 
         System.out.println("Enter Product Colour: ");
         String color = sc.nextLine();
@@ -86,9 +83,17 @@ class Main {
         variantList.add(newVariant);
 
         System.out.println("New Variant Added : " + newVariant);
+
+        System.out.println("Wants to create Stock of it? (Y/N)");
+        String s = sc.next();
+
+        if (s.toUpperCase().equals("Y")) {
+            createStock(newVariant);
+        }
+
     }
 
-    public static void createStock() {
+    public static void createStock(Variant variant) {
         sc.nextLine();
 
         if (variantList.isEmpty()) {
@@ -96,23 +101,27 @@ class Main {
             return;
         }
 
-        System.out.println("Select variant Id for Stock Generation : ");
-        for(Variant v : variantList){
-            System.out.println(v);
-        }
-        int variantId = safeInt() ;
+        Variant selectedVariant = variant;
+        int variantId;
 
-        Variant selectedVariant=null;
+        if(selectedVariant==null) {
+            System.out.println("Select variant Id for Stock Generation : ");
 
-        for(Variant v : variantList){
-            if(variantId==v.getVariantId()){
-              selectedVariant=v;
+            for (Variant v : variantList) {
+                System.out.println(v);
             }
-        }
 
-        if(selectedVariant==null){
-            System.out.println("Wrong Variant Id : ");
-            return;
+            variantId = safeInt();
+
+            selectedVariant=variantList.stream()
+                    .filter(v-> v.getVariantId()==variantId)
+                    .findFirst()
+                    .orElse(null);
+
+            if(selectedVariant==null){
+                System.out.println("Variant does not exitsts");
+                return;
+            }
         }
 
         System.out.println("Enter Product Quantity: ");
@@ -120,9 +129,8 @@ class Main {
 
         sc.nextLine();
 
-      //  System.out.println("Enter Product Expire date: ");
         LocalDate today = LocalDate.now();
-        LocalDate exDate= today.plusDays(15);
+        LocalDate exDate = today.plusDays(15);
 
 
         System.out.println("Enter Product MRP: ");
@@ -131,7 +139,7 @@ class Main {
         System.out.println("Enter Product Selling price: ");
         Double sellingPrice = sc.nextDouble();
 
-        if(sellingPrice>mrp){
+        if (sellingPrice > mrp) {
 
             System.out.println("Selling price cant more than actual MRP");
             return;
@@ -140,30 +148,28 @@ class Main {
         Money newMrp = new Money(mrp);
         Money newSellingPrice = new Money(sellingPrice);
 
-        try{
+        try {
             StockMaster newStock = new StockMaster(qty, exDate, selectedVariant, newMrp, newSellingPrice);
             stockList.add(newStock);
             storeInventory.addStock(newStock);
+            System.out.println("Inventory Updated : " + newStock);
 
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println(e);
         }
-
-
-
     }
 
     public static void createBill() {
         sc.nextLine();
 
-    //    Supplier supplier = supplierList.get(0);
+        //    Supplier supplier = supplierList.get(0);
 
-        for(Supplier s : supplierList){
+        for (Supplier s : supplierList) {
             System.out.println(s);
         }
 
         System.out.println("Select Supplier : ");
-        int index=safeInt()-1;
+        int index = safeInt() - 1;
 
         if (index < 0 || index >= supplierList.size()) {
             System.out.println("Invalid Supplier");
@@ -172,23 +178,22 @@ class Main {
 
         System.out.println("Select GST Method : ");
         System.out.println("1.IGST \n2.CGST ");
-        int gst=sc.nextInt();
+        int gst = sc.nextInt();
 
         TaxStrategy strategy;
 
-        if(gst==1){
-            strategy=new IGSTStrategy();
-        }else{
-            strategy=new CGSTStrategy();
+        if (gst == 1) {
+            strategy = new IGSTStrategy();
+        } else {
+            strategy = new CGSTStrategy();
         }
 
-        Supplier s=supplierList.get(index);
+        Supplier s = supplierList.get(index);
 
-        Bill bill = new Bill(s,strategy);
+        Bill bill = new Bill(s, strategy);
         billList.add(bill);
 
-        System.out.println("New Bill Created : ");
-
+        addItemToBill();
     }
 
     public static void addItemToBill() {
@@ -201,8 +206,8 @@ class Main {
 
         System.out.println("Available Bills");
 
-        for(Bill b: billList){
-            System.out.println("Bill Id : " + b.getBillId() + " Supplier Name : " + b.getSupplierName() + " Supplier Contact : "  + b.getSupplieContact());
+        for (Bill b : billList) {
+            System.out.println("Bill Id : " + b.getBillId() + " Supplier Name : " + b.getSupplierName() + " Supplier Contact : " + b.getSupplieContact());
         }
 
         System.out.print("Choose Bill ID: ");
@@ -213,67 +218,49 @@ class Main {
             return;
         }
 
-        // 1
-
         Bill bill = billList.get(bIndex);
-
-        // 2
-
-
 
         System.out.println("Available Stock:");
         for (int i = 0; i < stockList.size(); i++) {
             System.out.println((i + 1) + ". " + stockList.get(i));
         }
 
-        System.out.print("Choose Stock: ");
-        int sIndex = safeInt() - 1;
+        System.out.println("Enter Variant Id : ");
+        int variantId = sc.nextInt();
 
-        if (sIndex < 0 || sIndex >= stockList.size()) {
-            System.out.println("Invalid Stock.");
-            return;
-        }
+        System.out.println("Enter Quantity : ");
+        int quantity = sc.nextInt();
 
-        StockMaster stock = stockList.get(sIndex);
-
-        bill.addItem(stock);
-
-
-
-        System.out.println("Item added successfully.");
-
-        //3
-
-//        System.out.println("Enter Variant Id : ");
-//        int variantId=sc.nextInt();
-//
-//        System.out.println("Enter Quantity : ");
-//        int quantity=sc.nextInt();
-//
-//        addItemToBill(bill,variantId,quantity);
+        addItemToBill(bill, variantId, quantity);
     }
 
-//    public static void addItemToBill(Bill bill,int variantId,int quantity){
-//        boolean ans=storeInventory.deductStockFEFO(variantId,quantity);
-//
-//        if(!ans){
-//            System.out.println("Insufficent Stock");
-//            return;
-//        }
-//
-//        StockMaster stm=storeInventory.getFirstBatch(variantId);
-//        if(stm==null){
-//            System.out.println("No Stock avilable");
-//            return;
-//        }
-//
-//        Bill.PurchaseItem(stm);
-//
-//        Variant variant=stm.getVariant();
-//        Money sellingPrice=stm.getSellingPrice();
-//
-//
-//    }
+    public static void addItemToBill(Bill bill, int variantId, int quantity) {
+
+        try {
+            boolean ans = storeInventory.deductStockFEFO(variantId, quantity);
+
+            if (!ans) {
+                System.out.println("Insufficent Stock");
+                return;
+            }
+
+            StockMaster firstBatch = storeInventory.getFirstBatch(variantId);
+            if (firstBatch == null) {
+                System.out.println("No Stock avilable");
+                return;
+            }
+
+            StockMaster finalBatch = new StockMaster(firstBatch.getQuantity(), firstBatch.getExpireDate(), firstBatch.getVariant(), firstBatch.getMrp(), firstBatch.getSellingPrice());
+
+            bill.addItem(finalBatch);
+            System.out.println("Bill Generated");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        showBill();
+
+    }
 
     public static void showBill() {
         sc.nextLine();
@@ -300,7 +287,7 @@ class Main {
 
     }
 
-    public static void displayAll(){
+    public static void displayAll() {
 
         sc.nextLine();
 
@@ -308,46 +295,115 @@ class Main {
         System.out.println("2.Variant List");
         System.out.println("3.Stock Master List");
         System.out.println("4.Bill List");
+        System.out.println("3.Inventory List");
 
         System.out.println("Enter Choice : ");
-        int ch=sc.nextInt();
+        int ch = sc.nextInt();
 
-        if(ch==1){
-            if(productList.isEmpty()){
-                System.out.println("No Producct Avilable");
-            }else{
-                for(Product p: productList){
+        if (ch == 1) {
+            if (productList.isEmpty()) {
+                System.out.println("No Product Avilable");
+            } else {
+                for (Product p : productList) {
                     System.out.println(p);
                 }
             }
-        }else if(ch==2){
-            if(variantList.isEmpty()){
+        } else if (ch == 2) {
+            if (variantList.isEmpty()) {
                 System.out.println("No Variant Avilable");
-            }else{
-                for(Variant v: variantList){
+            } else {
+                for (Variant v : variantList) {
                     System.out.println(v);
                 }
             }
-        }else if(ch==3){
-            if(productList.isEmpty()){
+        } else if (ch == 3) {
+            if (productList.isEmpty()) {
                 System.out.println("No Stock Avilable");
-            }else{
-                for(StockMaster s: stockList){
+            } else {
+                for (StockMaster s : stockList) {
                     System.out.println(s);
                 }
             }
-        }else if(ch==4){
-            if(billList.isEmpty()){
+        } else if (ch == 4) {
+            if (billList.isEmpty()) {
                 System.out.println("No Bill Avilable");
-            }else{
-                for(Bill b: billList){
-                    System.out.println(b);
+            } else {
+                for (Bill b : billList) {
+                    System.out.println(b.display());
                 }
             }
-        } else if (ch==5) {
+        } else if (ch == 5) {
             storeInventory.printInventory();
         }
 
+    }
+
+    public static void searchItems() {
+
+        sc.nextLine();
+
+        System.out.println("1.Product Find");
+        System.out.println("2.Variant Find");
+        System.out.println("3.Stock Find");
+
+        System.out.println("Enter Choice : ");
+        int ch = sc.nextInt();
+
+        int id = safeInt();
+
+        if (ch == 1) {
+            try (Product p = findProductById(id);) {
+                System.out.println(p);
+            } catch (Exception e) {
+                System.out.println("Product Does not Exists");
+            }
+        }
+        if (ch == 2) {
+
+            Variant v=findVariantById(id);
+            if(v!=null){
+                System.out.println(v);
+            }else{
+                System.out.println("Variant Does not exists");
+            }
+
+        }
+        if (ch == 3) {
+           StockMaster s=findStockById(id);
+            if(s!=null){
+                System.out.println(s);
+            }else{
+                System.out.println("Stock Does not exists");
+            }
+        }
+    }
+
+    private static Product findProductById(int id) throws Exception {
+        for (Product p : productList) {
+            if (p.getProductId() == id) {
+                return p;
+            }
+        }
+        throw new Exception("Product does not exists");
+    }
+
+    private static Variant findVariantById(int id){
+        for (Variant v : variantList) {
+            if (v.getVariantId() == id) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static StockMaster findStockById(int id){
+        for (StockMaster s : stockList) {
+            if (s.getStockId() == id) {
+                return s;
+            }
+        }
+        return null;
     }
 
     public static int safeInt() {
@@ -363,8 +419,7 @@ class Main {
     public static void main(String[] args) {
 
         supplierList.add(new Supplier("Tony Textile", "7984569840"));
-        supplierList.add(new Supplier("Hardik Raw Menu factoring Unit","1234567890"));
-
+        supplierList.add(new Supplier("Hardik Raw Menu factoring Unit", "1234567890"));
 
         int ch;
 
@@ -375,21 +430,22 @@ class Main {
             System.out.println("3. Create Stock Batch");
             System.out.println("4. Create Bill");
             System.out.println("5. Add Item to Bill");
-            System.out.println("6. Display Bill");
             System.out.println("7. Display All");
-            System.out.println("8. Exit");
+            System.out.println("8. Search Item");
+            System.out.println("9. Exit");
             System.out.print("Choose option: ");
             ch = sc.nextInt();
             switch (ch) {
                 case 1 -> createProduct();
                 case 2 -> createVariant(null);
-                case 3 -> createStock();
+                case 3 -> createStock(null);
                 case 4 -> createBill();
                 case 5 -> addItemToBill();
                 case 6 -> showBill();
                 case 7 -> displayAll();
+                case 8 ->searchItems();
 
-                case 8 -> {
+                case 9 -> {
                     System.out.println("Exiting...");
                     return;
                 }

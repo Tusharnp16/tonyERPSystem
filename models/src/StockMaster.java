@@ -41,6 +41,10 @@ public class StockMaster {
         return quantity;
     }
 
+    public int getStockId() {
+        return batchId;
+    }
+
     public Variant getVariant() {
         return variant;
     }
@@ -67,14 +71,14 @@ public class StockMaster {
 
     @Override
     public String toString() {
-        return " BatchId : " + batchId +
-                ", ExpiryDate : " + expiryDate +
-                ", Quantity : " + quantity +
-                ", Selling Price : " + sellingPrice +
-                ", MRP : " + mrp +
-                "\n Variant : " + variant;
-        //    ", Supplier : " + supplier;
+        return variant + "\n" +
+                "  Batch ID       : " + batchId + "\n" +
+                "  Expiry Date    : " + expiryDate + "\n" +
+                "  Quantity       : " + quantity + "\n" +
+                "  Selling Price  : " + sellingPrice + "\n" +
+                "  MRP            : " + mrp + "\n";
     }
+
 }
 
 

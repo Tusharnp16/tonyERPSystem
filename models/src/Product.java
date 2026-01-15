@@ -1,6 +1,6 @@
 import java.util.*;
 
-class Product {
+class Product implements AutoCloseable {
 
     private final int productId;
     private String productName;
@@ -27,8 +27,6 @@ class Product {
         return productName;
     }
 
-
-
     public void addVariant(Variant variant){
         variants.add(variant);
     }
@@ -39,10 +37,15 @@ class Product {
 
     @Override
     public String toString() {
-        return  "Id : " + productId +
-                ",Product Name : " + productName +
-                ", Date : " +createdAt +
-                ", Item Code : " + itemCode;
+        return "\n  Product ID   : " + productId + "\n" +
+                "  Name          : " + productName + "\n" +
+                "  Created At    : " + createdAt + "\n" +
+                "  Item Code     : " + itemCode + "\n" ;
+    }
+
+    @Override
+    public void close() throws Exception {
+        throw  new Exception("Product does not Exists");
     }
 }
 

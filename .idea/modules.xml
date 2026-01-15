@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/Exceptions/Exceptions.iml" filepath="$PROJECT_DIR$/Exceptions/Exceptions.iml" />
       <module fileurl="file://$PROJECT_DIR$/interfaces/Interfaces.iml" filepath="$PROJECT_DIR$/interfaces/Interfaces.iml" />
       <module fileurl="file://$PROJECT_DIR$/models/Models.iml" filepath="$PROJECT_DIR$/models/Models.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />

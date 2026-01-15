@@ -33,7 +33,6 @@ public class Bill {
         this.supplierName=supplier.getContact();
         this.supplieContact=supplier.getContactNumber();
         this.strategy=strategy;
-
     }
 
     public void addItem(StockMaster stockMaster) {
@@ -52,15 +51,6 @@ public class Bill {
         return total;
     }
 
-//    @Override
-//    public String toString() {
-//        return "\n" + " Bill Id = " + billId +
-//                "\n Supplier = " + supplier +
-//                "\n Stock = " + stockBatch +
-//                //    "\n Variant = " + variant +
-//                "\n Quantity = " + stockBatch.getQuantity() +
-//                "\n Total = " + total;
-
     public String getSupplieContact() {
         return supplieContact;
     }
@@ -72,13 +62,6 @@ public class Bill {
     public int getBillId() {
         return billId;
     }
-
-    /// /                "\n GST = " + taxAmount +
-    /// /                "\n Total Bill = " + finalAmout;
-//
-//    }
-
-
 
     public String display(){
         StringBuilder sb = new StringBuilder();
@@ -135,15 +118,12 @@ public class Bill {
         public String toString() {
             return  "Item:\n" +
                     "  Purchase ID : " + purchaseId + "\n" +
+                    "  Variant     : " + product.getVariant() + "\n" +
+                    "  Expiry      : " + expireDate + "\n" +
                     "  Qty         : " + quantity + "\n" +
                     "  Price       : " + sellingPrice+ "\n" +
                     "  MRP         : " + mrp  + "\n" +
-                    "  Net Amount  : " + netAmount + "\n" +
-                    "  Product Id  : " + product.getProductId() + "\n" +
-                    "  Variant     : " + product.getVariant() + "\n" +
-                    "  Expiry      : " + expireDate + "\n";
+                    "  Net Amount  : " + netAmount + "\n";
         }
-
-
     }
 }

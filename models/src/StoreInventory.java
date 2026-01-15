@@ -42,8 +42,8 @@ public class StoreInventory {
             }
         }
         if(remaining>0){
-            System.out.println("Not enough stocks");
-            return false;
+            throw new InventoryException("StockShortageException : " +
+                    "Not enough stocks");
         }
 
         return true;

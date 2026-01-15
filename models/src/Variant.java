@@ -38,16 +38,12 @@ public class Variant {
         return product;
     }
 
-
-//    public Money getPrice(){
-//        return mrp;
-//    }
-
     @Override
     public String toString() {
-        return  product +
-                " Variant Id : " + variantId +
-                ", Colour : " + colour +
-                ", Size : " + size;
+        return  product + "\n" +
+                "  Variant Id  : " + variantId + "\n" +
+                "  Colour      : " + colour + "\n" +
+                "  Size        : " + size + "\n";
     }
+
 }
