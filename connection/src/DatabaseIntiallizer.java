@@ -23,6 +23,13 @@ public final class DatabaseIntiallizer {
                     created_at TIMESTAMP NOT NULL DEFAULT NOW()
                 );
                 """;
+
+        try(Connection con=DBConnection.getConnection();
+            Statement stmt=con.createStatement()){
+            stmt.execute(sql);
+        }catch (Exception e){
+            System.out.println(e);
+        }
     }
 
     private static void createStockMasterTable() {
