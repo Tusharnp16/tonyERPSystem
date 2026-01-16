@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="Connections" external.linked.project.path="$MODULE_DIR$/../../Connections" external.root.project.path="$MODULE_DIR$/../../Connections" external.system.id="GRADLE" external.system.module.group="org.example" external.system.module.version="1.0-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../Connections">
+      <excludeFolder url="file://$MODULE_DIR$/../../Connections/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../Connections/build" />
+    </content>
+    <orderEntry type="jdk" jdkName="25" jdkType="JavaSDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

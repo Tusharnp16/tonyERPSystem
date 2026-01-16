@@ -2,10 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Connections.iml" filepath="$PROJECT_DIR$/.idea/modules/Connections.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Connections.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Connections.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Connections.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Connections.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/Exceptions/Exceptions.iml" filepath="$PROJECT_DIR$/Exceptions/Exceptions.iml" />
       <module fileurl="file://$PROJECT_DIR$/interfaces/Interfaces.iml" filepath="$PROJECT_DIR$/interfaces/Interfaces.iml" />
       <module fileurl="file://$PROJECT_DIR$/models/Models.iml" filepath="$PROJECT_DIR$/models/Models.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Repostitories/Repostitories.iml" filepath="$PROJECT_DIR$/Repostitories/Repostitories.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/connection/connection.iml" filepath="$PROJECT_DIR$/connection/connection.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/shop.iml" filepath="$PROJECT_DIR$/.idea/shop.iml" />
     </modules>
   </component>

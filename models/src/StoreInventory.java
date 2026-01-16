@@ -41,6 +41,7 @@ public class StoreInventory {
                 remaining=0;
             }
         }
+
         if(remaining>0){
             throw new InventoryException("StockShortageException : " +
                     "Not enough stocks");

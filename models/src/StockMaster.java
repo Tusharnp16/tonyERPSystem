@@ -5,10 +5,13 @@ import java.util.Locale;
 public class StockMaster {
 
     private final Variant variant;
-//    private int variantId;
-//    private int producrId;
-    private final int batchId;
+    private int batchId;
     private static int autoGenrateId=100;
+
+    public void setBatchId(int batchId) {
+        this.batchId = batchId;
+    }
+
     private int quantity;
     private Money mrp;
     private Money sellingPrice;

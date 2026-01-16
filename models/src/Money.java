@@ -12,7 +12,6 @@ public class Money {
         this.price=BigDecimal.valueOf(prices).setScale(2, RoundingMode.HALF_UP);
     }
 
-
     public BigDecimal toBigDecimal(){
         return price;
     }
