@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.*;
 import java.sql.*;
 
@@ -12,7 +13,9 @@ public class StoreInventory {
     }
 
     private void loadInventoryFromDB() {
-        String sql = "SELECT * FROM stock_master WHERE quantity > 0";
+
+        String sql = "SELECT batch_id, variant_id, quantity, expire_date, mrp, selling_price " +
+                "FROM stock_master WHERE quantity > 0";
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement pstmt = con.prepareStatement(sql)) {
@@ -21,28 +24,36 @@ public class StoreInventory {
 
             while (rs.next()) {
 
-                StockMaster sm = new StockMaster(
-                        rs.getInt("quantity"),
-                        rs.getInt("varinant_id"),
-                        rs.getDate("expire_date").toLocalDate(),
-                        (new Money(rs.getDouble("mrp"),
-                        new Money(rs.getDouble("selling_price")
+                int batchId = rs.getInt("batch_id");
+                int quantity = rs.getInt("quantity");
+                LocalDate expiry = rs.getDate("expire_date").toLocalDate();
+                Money mrp = new Money(rs.getDouble("mrp"));
+                Money sellingPrice = new Money(rs.getDouble("selling_price"));
 
-
-                );
-                sm.setBatchId(rs.getInt("batch_id"));
-
-                Variant v = new Variant();
+                Variant v = new Variant(rs.getInt("variant_id"));
                 v.setVariantId(rs.getInt("variant_id"));
-                sm.setVariant(v);
 
-                addStock(sm);  // load into memory map
+                // CREATE StockMaster using the REAL constructor
+                StockMaster sm = new StockMaster(
+                        quantity,
+                        expiry,
+                        v,
+                        mrp,
+                        sellingPrice
+                );
+
+                // set batch id
+                sm.setBatchId(batchId);
+
+                // Load into in-memory Map
+                addStock(sm);
             }
 
         } catch (Exception e) {
             System.out.println("Error loading inventory: " + e);
         }
     }
+
 
 
     // *************** 2. ADD STOCK ***************

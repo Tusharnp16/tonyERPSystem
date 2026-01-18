@@ -35,6 +35,11 @@ public class Variant {
         product.addVariant(this);
     }
 
+    public Variant(int variantId) {
+        this.variantId = variantId;
+    }
+
+
     public void setVariantId(int variantId) {
         this.variantId = variantId;
     }
