@@ -10,18 +10,65 @@ public final class DatabaseIntiallizer {
         createVariantTable();
         createStockMasterTable();
         createBillTable();
+        createSupplier();
+        createInventory();
     }
+
+    private static void createInventory() {
+
+        String sql = """
+                    CREATE TABLE IF NOT EXISTS inventory (
+                            batch_id BIGINT PRIMARY KEY REFERENCES stock_master(batch_id) ON DELETE CASCADE,
+                    variant_id BIGINT NOT NULL REFERENCES variants(variant_id),
+                    expire_date DATE NOT NULL,
+                    quantity INT NOT NULL CHECK (quantity >= 0)
+                );
+                
+                """;
+            try(Connection con=DBConnection.getConnection();
+                 Statement stmt=con.createStatement()){
+                stmt.execute(sql);
+            }catch (Exception e){
+                System.out.println(e);
+            }
+}
+
+
+
+
+private static void createSupplier() {
+String sql= """
+                
+                    CREATE TABLE IF NOT EXISTS suppliers (
+                        supplier_id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 10001) PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        contact VARCHAR(20) NOT NULL,
+                        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                        updated_at TIMESTAMP
+                    );
+                
+                """;
+        try(Connection con=DBConnection.getConnection();
+            Statement stmt=con.createStatement()){
+            stmt.execute(sql);
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
+
 
     private static void createBillTable() {
         String sql= """
                 CREATE TABLE IF NOT EXISTS bills (
-                    bill_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                    gst_type VARCHAR(10) NOT NULL,      -- IGST or CGST                  
-                    total_amount NUMERIC(12,2) DEFAULT 0,
-                    tax_amount NUMERIC(12,2) DEFAULT 0,
-                    net_amount NUMERIC(12,2) DEFAULT 0,                 
-                    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-                );
+                      bill_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                      supplier_id BIGINT NOT NULL REFERENCES suppliers(supplier_id) ON DELETE CASCADE,
+                      gst_type VARCHAR(10) NOT NULL,           
+                      total_amount NUMERIC(12,2) DEFAULT 0,
+                      tax_amount NUMERIC(12,2) DEFAULT 0,
+                      net_amount NUMERIC(12,2) DEFAULT 0,
+                      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+                  );
                 """;
 
         try(Connection con=DBConnection.getConnection();
@@ -31,6 +78,33 @@ public final class DatabaseIntiallizer {
             System.out.println(e);
         }
     }
+
+
+    private static void createBillItemTable() {
+        String sql= """
+                CREATE TABLE IF NOT EXISTS bill_items (
+                        bill_item_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                        bill_id BIGINT NOT NULL REFERENCES bills(bill_id) ON DELETE CASCADE,
+                        batch_id BIGINT NOT NULL REFERENCES stock_master(batch_id) ON DELETE RESTRICT,
+                        quantity INT NOT NULL,
+                        selling_price NUMERIC(12,2) NOT NULL,
+                        mrp NUMERIC(12,2) NOT NULL,
+                        tax_amount NUMERIC(12,2) DEFAULT 0,
+                        line_total NUMERIC(12,2) DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    );
+                    
+                """;
+
+        try(Connection con=DBConnection.getConnection();
+            Statement stmt=con.createStatement()){
+            stmt.execute(sql);
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
+
 
     private static void createStockMasterTable() {
         String sql =

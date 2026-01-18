@@ -2,8 +2,7 @@ import java.util.*;
 
 public class Variant {
 
-    private final int variantId;
-    private static int autoGenrateId=1001;
+    private int variantId;
     private String colour;
     private String size;
     private Product product;
@@ -29,12 +28,15 @@ public class Variant {
         if(product==null){
            throw new IllegalArgumentException("Variant should have aligned product");
         }
-        this.variantId = autoGenrateId++;
         this.colour = colour;
         this.size = size;
         this.product = product;
 //        this.mrp=price;
         product.addVariant(this);
+    }
+
+    public void setVariantId(int variantId) {
+        this.variantId = variantId;
     }
 
     public String getColour() {

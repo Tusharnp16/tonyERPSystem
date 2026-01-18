@@ -3,16 +3,38 @@ import java.util.List;
 
 public class Supplier {
 
-    private final int supplierId;
-    private static int autoGenrateId=1;
-    private final String contact;
-    private final String contactNumber;
+    private int supplierId;
+    private  String contact;
+    private  String contactNumber;
     private final List<StockMaster> batches=new ArrayList<>();
+   // private StockMaster master;
 
     public Supplier(String name, String contactNumber) {
-        this.supplierId = autoGenrateId++;
         this.contact = name;
         this.contactNumber = contactNumber;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
+    }
+
+//    public void setMaster(StockMaster master){
+//        this.master=master;
+//    }
+//
+//    public StockMaster getMaster(){
+//        return master;
+//    }
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public int getSupplierId() {
+        return supplierId;
+    }
+
+    public void setSupplierId(int supplierId) {
+        this.supplierId = supplierId;
     }
 
     public String getContact() {

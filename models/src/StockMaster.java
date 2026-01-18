@@ -6,7 +6,7 @@ public class StockMaster {
 
     private final Variant variant;
     private int batchId;
-    private static int autoGenrateId=100;
+
 
     public void setBatchId(int batchId) {
         this.batchId = batchId;
@@ -24,20 +24,41 @@ public class StockMaster {
             throw new IllegalArgumentException("negative stock initialization 0");
         }
 
-//        if (variant == null) {
-//            throw new IllegalArgumentException("Should have variant");
-//        }
-
-          this.variant = variant;
-//        this.variantId=variantId;
-//        this.producrId=productId;
-        this.batchId = autoGenrateId++;
+        this.variant = variant;
         this.quantity = quantity;
         this.expiryDate = expiryDate;
         this.mrp=mrp;
         this.sellingPrice=sellingPrice;
 
         variant.addStock(this);
+    }
+
+    public int getBatchId() {
+        return batchId;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setMrp(Money mrp) {
+        this.mrp = mrp;
+    }
+
+    public void setSellingPrice(Money sellingPrice) {
+        this.sellingPrice = sellingPrice;
+    }
+
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public Supplier getSupplier() {
+        return supplier;
     }
 
     public int getQuantity() {

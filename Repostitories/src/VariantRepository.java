@@ -3,17 +3,18 @@ import java.sql.*;
 public class VariantRepository {
     public static void save(Variant variant) throws Exception {
 
-        String sql="INSERT INTO variants(product_id,color,size)  values(?,?,?)";
+        String sql="INSERT INTO variants(product_id,color,size) values(?,?,?) RETURNING variant_id";
 
         try(Connection con=DBConnection.getConnection()){
             PreparedStatement pstmt=con.prepareStatement(sql);
             pstmt.setInt(1,variant.getProduct().getProductId());
             pstmt.setString(2,variant.getSize());
             pstmt.setString(3,variant.getColour());
-            int ans=pstmt.executeUpdate();
 
-            if(ans>0){
-                System.out.println("Data Inserted");
+            ResultSet rs= pstmt.executeQuery();
+            if(rs.next()){
+                int id=rs.getInt("variant_id");
+                variant.setVariantId(id);
             }
 
         }catch (Exception e){
@@ -22,19 +23,26 @@ public class VariantRepository {
     }
 
     public static Variant findById(int id) {
-        String sql = "SELECT * FROM variant WHERE variant_id = ?";
+        String sql = "SELECT * FROM variants WHERE variant_id = ?";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
 
-            String color=rs.getString("color");
-            String size=rs.getString("size");
+            if(rs.next()) {
 
-            Variant v=new Variant(color,size,null);
+                String color = rs.getString("color");
+                String size = rs.getString("size");
 
-            return v;
+                int prdId=rs.getInt("product_id");
+                Product product=ProductRepository.findById(prdId);
+
+                Variant v = new Variant(color, size, product);
+                v.setVariantId(rs.getInt("variant_id"));
+
+                return v;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -21,5 +21,7 @@
     <orderEntry type="library" name="postgresql-42.7.2" level="project" />
     <orderEntry type="module" module-name="connection" />
     <orderEntry type="module" module-name="Repostitories" />
+    <orderEntry type="library" name="jetbrains.annotations" level="project" />
+    <orderEntry type="library" name="postgresql-42.7.9" level="project" />
   </component>
 </module>
