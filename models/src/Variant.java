@@ -70,7 +70,7 @@ public class Variant {
 
     @Override
     public String toString() {
-        return  product + "\n" +
+        return  product==null ? " " : product + "\n" +
                 "  Variant Id  : " + variantId + "\n" +
                 "  Colour      : " + colour + "\n" +
                 "  Size        : " + size + "\n";

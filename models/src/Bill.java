@@ -10,7 +10,6 @@ public class Bill {
     private Money total;
 
     private Date createdAt;
-    private Date modidfiedDate;
 
     private String supplierName;
     private String supplieContact;
@@ -27,7 +26,6 @@ public class Bill {
 
     public Bill(Supplier supplier,TaxStrategy strategy) {
         this.createdAt = new Date();
-        this.modidfiedDate = new Date();
         this.total = new Money(0.0);
         this.supplierName=supplier.getContact();
         this.supplieContact=supplier.getContactNumber();
@@ -48,7 +46,6 @@ public class Bill {
         this.taxAmount = cal.applyTax(total);
         this.finalAmout = total.add(taxAmount);
 
-        this.modidfiedDate = new Date();
     }
 
     public void recalculateTotals() {
@@ -84,14 +81,6 @@ public class Bill {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Date getModidfiedDate() {
-        return modidfiedDate;
-    }
-
-    public void setModidfiedDate(Date modidfiedDate) {
-        this.modidfiedDate = modidfiedDate;
     }
 
     public void setSupplierName(String supplierName) {
@@ -165,7 +154,6 @@ public class Bill {
         sb.append("Supplier Name : ").append(supplierName).append("\n");
         sb.append("Supplier Contact No. : ").append(supplieContact).append("\n");
         sb.append("Created At     : ").append(createdAt).append("\n");
-        sb.append("Modified At    : ").append(modidfiedDate).append("\n");
         sb.append("--------------------------------------\n");
         sb.append("Items:\n");
 
@@ -183,8 +171,6 @@ public class Bill {
         return sb.toString();
 
     }
-
-
 
     public static class PurchaseItem {
 
@@ -208,7 +194,6 @@ public class Bill {
             this.mrp = stockMaster.getMrp();
             this.netAmount = sellingPrice.mutiply(qty);
         }
-
 
         public int getPurchaseId() {
             return purchaseId;

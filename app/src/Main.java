@@ -121,6 +121,7 @@ class Main {
     }
 
     public static void createBill() throws Exception {
+
         sc.nextLine();
 
         SupplierRepository.display();
@@ -134,7 +135,6 @@ class Main {
             return;
         }
 
-
         String supplierState= supplier.getState();
 
         TaxStrategy tax = (supplierState.equalsIgnoreCase("GUJARAT") || supplierState.equalsIgnoreCase("GJ")) ? new CGSTStrategy() : new IGSTStrategy();
@@ -145,13 +145,9 @@ class Main {
         System.out.println("Bill Created: " + bill.getBillId());
 
         addItemToBill(bill);
-
     }
 
     public static void addItemToBill(Bill bill) throws Exception {
-
-        System.out.println("DEBUG — Bill ID before saving item: " + bill.getBillId());
-
 
         StockRepository.display();
 
@@ -171,25 +167,15 @@ class Main {
         StockMaster fullBatch = StockRepository.findById(batch.getBatchId());
 
         bill.addItem(fullBatch, quantity);
-
-
         Bill.PurchaseItem item = bill.getPurchaseItemList().get(bill.getPurchaseItemList().size() - 1);
-
 
         BillItemRepository.save(bill.getBillId(), item);
         bill.recalculateTotals();
         BillRepository.updateTotals(bill);
-        bill.display();
         System.out.println("Item added to bill.");
         Bill finalBill=BillRepository.findById(bill.getBillId());
         System.out.println(finalBill.display());
 
-    }
-
-    public static void showBill() throws Exception {
-        sc.nextLine();
-
-        BillRepository.display();
     }
 
     public static void displayAll() {
@@ -224,7 +210,6 @@ class Main {
             }
         }
     }
-
 
     public static void main(String[] args) throws Exception {
 

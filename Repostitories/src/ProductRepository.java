@@ -53,10 +53,16 @@ public class ProductRepository {
                 Statement stmt=con.createStatement();
                 ResultSet rs= stmt.executeQuery(sql);
 
+                System.out.printf("%-10s %-15s %-12s %-25s %-25s%n",
+                        "ProductID", "Name", "ItemCode", "Created", "Modified");
+
                 while (rs.next()){
-                    System.out.println(rs.getInt("product_id") + " | " + rs.getString("name") + " | "
-                            + rs.getString("item_code") + " | " + rs.getString("created_at")
-                            + " | " + rs.getString("modified_at"));
+                    System.out.printf("%-10d %-15s %-12s %-25s %-25s%n",
+                                rs.getInt("product_id"),
+                                rs.getString("name"),
+                                rs.getString("item_code"),
+                                rs.getString("created_at"),
+                                rs.getString("modified_at"));
                 }
 
             } catch (Exception e) {

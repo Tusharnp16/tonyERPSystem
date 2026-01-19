@@ -76,20 +76,40 @@ public class StockRepository {
 
 
     public static void display(){
-        String sql="SELECT * FROM stock_master";
+        String sql="SELECT s.batch_id,\n" +
+                "       v.variant_id,\n" +
+                "       p.name AS product_name,\n" +
+                "       v.size,\n" +
+                "       v.color,\n" +
+                "       s.expire_date,\n" +
+                "       s.quantity,\n" +
+                "       s.mrp,\n" +
+                "       s.selling_price\n" +
+                "FROM stock_master s\n" +
+                "JOIN variants v ON s.variant_id = v.variant_id\n" +
+                "JOIN products p ON v.product_id = p.product_id;\n";
 
         try(Connection con=DBConnection.getConnection()){
             Statement stmt=con.createStatement();
             ResultSet rs= stmt.executeQuery(sql);
 
-            while (rs.next()){
-                System.out.println(rs.getInt("batch_id") + " | " +
-                        rs.getInt("variant_id") + " | " +
-                        rs.getString("expire_date")
-                        + " | " + rs.getString("quantity")
-                        + " | " + rs.getDouble("mrp")
-                        + " | " + rs.getDouble("selling_price"));
+            System.out.printf("%-7s %-10s %-15s %-10s %-10s %-12s %-10s %-10s %-10s%n",
+                    "BatchId", "VariantId", "ProductName", "Size", "Color",
+                    "ExpireDate", "Quantity", "MRP", "SellingPrice");
+
+            while (rs.next()) {
+                System.out.printf("%-7d %-10d %-15s %-10s %-10s %-12s %-10s %-10.2f %-10.2f%n",
+                        rs.getInt("batch_id"),
+                        rs.getInt("variant_id"),
+                        rs.getString("product_name"),
+                        rs.getString("size"),
+                        rs.getString("color"),
+                        rs.getString("expire_date"),
+                        rs.getString("quantity"),
+                        rs.getDouble("mrp"),
+                        rs.getDouble("selling_price"));
             }
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);

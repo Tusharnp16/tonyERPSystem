@@ -56,11 +56,15 @@ public class VariantRepository {
             Statement stmt=con.createStatement();
             ResultSet rs= stmt.executeQuery(sql);
 
+            System.out.printf("%-10s %-15s %-12s %-10s%n","VariantId", "ProductName", "Size", "Colour");
+
             while (rs.next()){
-                System.out.println(rs.getInt("variant_id") + " | "
-                        + rs.getString("product_name") + " | " +
-                        rs.getString("size") + " | "
-                        + rs.getString("color"));
+                System.out.printf("%-10d %-15s %-12s %-10s%n",
+                                    rs.getInt("variant_id"),
+                                    rs.getString("product_name"),
+                                    rs.getString("size"),
+                                    rs.getString("color")
+                );
             }
 
         } catch (Exception e) {

@@ -4,47 +4,44 @@ import java.sql.*;
 
 public class StoreInventory {
 
-    private Map<Integer, List<StockMaster>> inventory = new HashMap<>();
+    private final Map<Integer, List<StockMaster>> inventory = new HashMap<>();
 
     public StoreInventory() {
         loadInventoryFromDB();
     }
 
     private void loadInventoryFromDB() {
-
-        String sql = "SELECT batch_id, variant_id, quantity, expire_date, mrp, selling_price " +
-                "FROM stock_master WHERE quantity > 0";
+        String sql = "SELECT s.batch_id,\n" +
+                "       s.variant_id,\n" +
+                "       v.color,\n" +
+                "       v.size,\n" +
+                "       s.quantity,\n" +
+                "       s.expire_date,\n" +
+                "       s.mrp,\n" +
+                "       s.selling_price\n" +
+                "FROM stock_master s\n" +
+                "JOIN variants v ON s.variant_id = v.variant_id\n" +
+                "WHERE s.quantity > 0;\n";
 
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement pstmt = con.prepareStatement(sql)) {
-
-            ResultSet rs = pstmt.executeQuery();
+             PreparedStatement pstmt = con.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
-
                 int batchId = rs.getInt("batch_id");
                 int quantity = rs.getInt("quantity");
                 LocalDate expiry = rs.getDate("expire_date").toLocalDate();
                 Money mrp = new Money(rs.getDouble("mrp"));
                 Money sellingPrice = new Money(rs.getDouble("selling_price"));
 
-                Variant v = new Variant(rs.getInt("variant_id"));
-                v.setVariantId(rs.getInt("variant_id"));
+                Variant variant = new Variant(rs.getInt("variant_id"));
+                variant.setColour(rs.getString("color"));
+                variant.setSize(rs.getString("size"));
 
-                // CREATE StockMaster using the REAL constructor
-                StockMaster sm = new StockMaster(
-                        quantity,
-                        expiry,
-                        v,
-                        mrp,
-                        sellingPrice
-                );
+                StockMaster batch = new StockMaster(quantity, expiry, variant, mrp, sellingPrice);
+                batch.setBatchId(batchId);
 
-                // set batch id
-                sm.setBatchId(batchId);
-
-                // Load into in-memory Map
-                addStock(sm);
+                addStock(batch);
             }
 
         } catch (Exception e) {
@@ -52,55 +49,35 @@ public class StoreInventory {
         }
     }
 
-
-
     public void addStock(StockMaster batch) {
         int variantId = batch.getVariant().getVariantId();
-
-        inventory.putIfAbsent(variantId, new ArrayList<>());
-        inventory.get(variantId).add(batch);
-
-        System.out.println("Stock Added to Inventory with variant : " + variantId);
+        inventory.computeIfAbsent(variantId, k -> new ArrayList<>()).add(batch);
     }
 
-
-    // *************** 3. FEFO DEDUCT (Updates DB also) ***************
     public boolean deductStockFEFO(int variantId, int askingQty) {
-
-        if (!inventory.containsKey(variantId)) {
+        List<StockMaster> batches = inventory.get(variantId);
+        if (batches == null || batches.isEmpty()) {
             System.out.println("Either variant is sold out or no such product in inventory");
             return false;
         }
-
-        List<StockMaster> batches = inventory.get(variantId);
 
         batches.sort(Comparator.comparing(StockMaster::getExpireDate));
 
         int remaining = askingQty;
 
-        Iterator<StockMaster> it = batches.iterator();
+        for (StockMaster batch : batches) {
+            if (remaining <= 0) break;
 
-        while (it.hasNext() && remaining > 0) {
-
-            StockMaster batch = it.next();
             int available = batch.getQuantity();
+            if (available <= 0) continue;
 
-            if (available <= remaining) {
-                // consume full batch
-                remaining -= available;
+            int deduct = Math.min(available, remaining);
+            int newQty = available - deduct;
 
-                updateDBDeleteBatch(batch.getBatchId(),0);  // DB DELETE
-                it.remove(); // memory remove
+            batch.setQuantity(newQty);
+            updateDBQuantity(batch.getBatchId(), newQty);
 
-            } else {
-                // partial consumption
-                int newQty = available - remaining;
-                remaining = 0;
-
-                batch.setQuantity(newQty);
-
-                updateDBQuantity(batch.getBatchId(), newQty); // DB UPDATE
-            }
+            remaining -= deduct;
         }
 
         if (remaining > 0) {
@@ -109,7 +86,6 @@ public class StoreInventory {
 
         return true;
     }
-
 
     private void updateDBQuantity(int batchId, int qty) {
         String sql = "UPDATE stock_master SET quantity = ? WHERE batch_id = ?";
@@ -123,36 +99,15 @@ public class StoreInventory {
         }
     }
 
-    private void updateDBDeleteBatch(int batchId,int qty) {
-        String sql = "UPDATE stock_master SET quantity = ? WHERE batch_id = ?\n";
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement pstmt = con.prepareStatement(sql)) {
-            pstmt.setInt(1, qty);
-            pstmt.setInt(2, batchId);
-            pstmt.executeUpdate();
-        } catch (Exception e) {
-            System.out.println("Error deleting batch: " + e);
-        }
-    }
-
-
-    // *************** 4. GET FIRST BATCH ***************
     public StockMaster getFirstBatch(int variantId) {
-        if (!inventory.containsKey(variantId)) return null;
-
         List<StockMaster> batches = inventory.get(variantId);
-        if (batches.isEmpty()) return null;
-
+        if (batches == null || batches.isEmpty()) return null;
         batches.sort(Comparator.comparing(StockMaster::getExpireDate));
         return batches.get(0);
     }
 
-
-    // *************** 5. PRINT INVENTORY ***************
     public void printInventory() {
-        System.out.println("Inventory:");
         for (Map.Entry<Integer, List<StockMaster>> entry : inventory.entrySet()) {
-            System.out.println("Variant Id : " + entry.getKey());
             for (StockMaster batch : entry.getValue()) {
                 System.out.println("  " + batch);
             }
@@ -160,4 +115,3 @@ public class StoreInventory {
         }
     }
 }
-

@@ -21,15 +21,6 @@ public class Supplier {
         this.contactNumber = contactNumber;
     }
 
-//    public void setMaster(StockMaster master){
-//        this.master=master;
-//    }
-//
-//    public StockMaster getMaster(){
-//        return master;
-//    }
-
-
     public String getState() {
         return state;
     }
@@ -64,8 +55,8 @@ public class Supplier {
 
     @Override
     public String toString() {
-        return ", Supplier ID : " + supplierId +
-                ", Supplier Name : " + contact +
-                 ", Contact Number : " + contactNumber;
+        return "Supplier ID : " + supplierId +
+               ", Supplier Name : " + contact +
+               ", Contact Number : " + contactNumber;
     }
 }

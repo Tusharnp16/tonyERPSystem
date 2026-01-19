@@ -18,7 +18,6 @@ public class BillRepository {
                       net_amount NUMERIC(12,2) DEFAULT 0,
                       created_at TIMESTAMP NOT NULL DEFAULT NOW()
 
-
      */
     public static void save(Bill bill) throws Exception {
 
@@ -102,24 +101,35 @@ public class BillRepository {
         return bill;
     }
 
+    public static void display() {
+        String sql = "SELECT b.bill_id, b.gst_type, b.total_amount, b.tax_amount, b.net_amount, " +
+                "s.supplier_id, s.name, s.contact " +
+                "FROM bills b " +
+                "JOIN suppliers s ON b.supplier_id = s.supplier_id";
 
-    public static void display(){
-        String sql="SELECT * FROM bills";
+        try (Connection con = DBConnection.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
 
-        try(Connection con=DBConnection.getConnection()){
-            Statement stmt=con.createStatement();
-            ResultSet rs= stmt.executeQuery(sql);
 
-            while (rs.next()){
-                System.out.println(rs.getInt("bill_id") + " | " +  rs.getString("gst_type")
-                        + " | " + rs.getInt("supplier_id")
-                        + " | " + rs.getDouble("total_amount")
-                        + " | " + rs.getDouble("tax_amount"));
+            System.out.printf("%-7s %-15s %-12s %-10s %-10s %-10s %-10s%n",
+                    "BillID", "SupplierName", "Contact", "GST", "Total", "Tax", "Net");
+
+            while (rs.next()) {
+                System.out.printf("%-7d %-15s %-12s %-10s %-10.2f %-10.2f %-10.2f%n",
+                        rs.getInt("bill_id"),
+                        rs.getString("name"),
+                        rs.getString("contact"),
+                        rs.getString("gst_type"),
+                        rs.getDouble("total_amount"),
+                        rs.getDouble("tax_amount"),
+                        rs.getDouble("net_amount"));
             }
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
+
 }
