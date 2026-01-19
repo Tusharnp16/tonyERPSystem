@@ -20,12 +20,13 @@ public class SupplierRepository {
 
     public static void save(Supplier supplier) throws Exception {
 
-        String sql="INSERT INTO suppliers(name,contact) values(?,?) RETURNING supplier_id";
+        String sql="INSERT INTO suppliers(name,contact,state) values(?,?,?) RETURNING supplier_id";
 
         try(Connection con=DBConnection.getConnection()){
             PreparedStatement pstmt=con.prepareStatement(sql);
             pstmt.setString(1, supplier.getContact());
             pstmt.setString(2, supplier.getContactNumber());
+            pstmt.setString(3,supplier.getState());
 
             ResultSet rs= pstmt.executeQuery();
             if(rs.next()){
@@ -49,7 +50,8 @@ public class SupplierRepository {
             if (rs.next()) {
                 Supplier s = new Supplier(
                         rs.getString("name"),
-                        rs.getString("contact")
+                        rs.getString("contact"),
+                        rs.getString("state")
                 );
                 s.setSupplierId(rs.getInt("supplier_id"));
                 return s;

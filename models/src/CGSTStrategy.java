@@ -4,7 +4,7 @@ public class CGSTStrategy implements TaxStrategy {
 
     private static final BigDecimal CGST = new BigDecimal("0.09");
     private static final BigDecimal SGST = new BigDecimal("0.09");
-    private static final String appliedGST = "CGST + SGST";
+    private static final String appliedGST = "CGST SGST";
 
     @Override
     public Money calulateGST(Money amount) {

@@ -6,8 +6,6 @@ public class StoreInventory {
 
     private Map<Integer, List<StockMaster>> inventory = new HashMap<>();
 
-
-    // *************** 1. LOAD INVENTORY FROM DATABASE ***************
     public StoreInventory() {
         loadInventoryFromDB();
     }
@@ -56,7 +54,6 @@ public class StoreInventory {
 
 
 
-    // *************** 2. ADD STOCK ***************
     public void addStock(StockMaster batch) {
         int variantId = batch.getVariant().getVariantId();
 
@@ -92,7 +89,7 @@ public class StoreInventory {
                 // consume full batch
                 remaining -= available;
 
-                updateDBDeleteBatch(batch.getBatchId());  // DB DELETE
+                updateDBDeleteBatch(batch.getBatchId(),0);  // DB DELETE
                 it.remove(); // memory remove
 
             } else {
@@ -114,7 +111,6 @@ public class StoreInventory {
     }
 
 
-    // *************** DB UPDATE HELPERS ***************
     private void updateDBQuantity(int batchId, int qty) {
         String sql = "UPDATE stock_master SET quantity = ? WHERE batch_id = ?";
         try (Connection con = DBConnection.getConnection();
@@ -127,11 +123,12 @@ public class StoreInventory {
         }
     }
 
-    private void updateDBDeleteBatch(int batchId) {
-        String sql = "DELETE FROM stock_master WHERE batch_id = ?";
+    private void updateDBDeleteBatch(int batchId,int qty) {
+        String sql = "UPDATE stock_master SET quantity = ? WHERE batch_id = ?\n";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement pstmt = con.prepareStatement(sql)) {
-            pstmt.setInt(1, batchId);
+            pstmt.setInt(1, qty);
+            pstmt.setInt(2, batchId);
             pstmt.executeUpdate();
         } catch (Exception e) {
             System.out.println("Error deleting batch: " + e);

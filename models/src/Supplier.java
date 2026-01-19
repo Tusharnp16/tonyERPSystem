@@ -7,12 +7,15 @@ public class Supplier {
     private  String contact;
     private  String contactNumber;
     private final List<StockMaster> batches=new ArrayList<>();
+    private String state;
    // private StockMaster master;
 
-    public Supplier(String name, String contactNumber) {
+    public Supplier(String name, String contactNumber,String state) {
         this.contact = name;
         this.contactNumber = contactNumber;
+        this.state=state;
     }
+
 
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
@@ -25,6 +28,16 @@ public class Supplier {
 //    public StockMaster getMaster(){
 //        return master;
 //    }
+
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
     public void setContact(String contact) {
         this.contact = contact;
     }

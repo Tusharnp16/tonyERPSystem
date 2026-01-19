@@ -42,7 +42,23 @@ public class BillRepository {
         }
     }
 
-    public static Bill findById(long billId) {
+    public static void updateTotals(Bill bill) throws Exception {
+        String sql = "UPDATE bills SET total_amount = ?, tax_amount = ?, net_amount = ? WHERE bill_id = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement pstmt = con.prepareStatement(sql)) {
+
+            pstmt.setDouble(1, bill.getTotal().getPrice());
+            pstmt.setDouble(2, bill.getTaxAmount().getPrice());
+            pstmt.setDouble(3, bill.getFinalAmout().getPrice());
+            pstmt.setInt(4, bill.getBillId());
+
+            pstmt.executeUpdate();
+        }
+    }
+
+
+    public static Bill findById(int billId) {
 
         Bill bill = null;
 
@@ -53,7 +69,7 @@ public class BillRepository {
         try (Connection con = DBConnection.getConnection();
              PreparedStatement pstmt = con.prepareStatement(sql)) {
 
-            pstmt.setLong(1, billId);
+            pstmt.setInt(1, billId);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
@@ -64,6 +80,9 @@ public class BillRepository {
                 bill.setTotal(new Money(rs.getDouble("total_amount")));
                 bill.setTaxAmount(new Money(rs.getDouble("tax_amount")));
                 bill.setFinalAmout(new Money(rs.getDouble("net_amount")));
+                String gstType=rs.getString("gst_type");
+               // TaxStrategy strategy= ;
+                bill.setStrategy(gstType=="IGST" ? new IGSTStrategy() :new CGSTStrategy());
                 bill.setCreatedAt(rs.getTimestamp("created_at"));
 
                 int supplierId = rs.getInt("supplier_id");

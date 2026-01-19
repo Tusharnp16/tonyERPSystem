@@ -50,7 +50,7 @@ public class VariantRepository {
     }
 
     public static void display(){
-        String sql="SELECT v.variant_id,p.name as product_name,v.size,v.color FROM variants v JOIN products p on v.variant_id=p.product_id";
+        String sql="SELECT v.variant_id,p.name as product_name,v.size,v.color FROM variants v LEFT JOIN products p on v.product_id=p.product_id";
 
         try(Connection con=DBConnection.getConnection()){
             Statement stmt=con.createStatement();

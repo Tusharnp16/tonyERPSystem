@@ -7,7 +7,7 @@ public class BillItemRepository {
     private static final String INSERT_SQL = """
         INSERT INTO bill_items 
         (bill_id, batch_id, quantity, selling_price, mrp, line_total) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
         """;
 
     private static final String FIND_BY_ID_SQL =
@@ -20,9 +20,6 @@ public class BillItemRepository {
             "SELECT * FROM bill_items";
 
 
-    // ----------------------------------------------------
-    //  SAVE BILL ITEM
-    // ----------------------------------------------------
     public static void save(int billId, Bill.PurchaseItem item) {
 
         try (Connection con = DBConnection.getConnection();
@@ -33,7 +30,7 @@ public class BillItemRepository {
             pstmt.setInt(3, item.getQuantity());
             pstmt.setDouble(4, item.getSellingPrice().getPrice());
             pstmt.setDouble(5, item.getMrp().getPrice());
-            pstmt.setDouble(7, item.getNetAmount().getPrice());
+            pstmt.setDouble(6, item.getNetAmount().getPrice());
 
             pstmt.executeUpdate();
 
@@ -107,7 +104,7 @@ public class BillItemRepository {
 
         StockMaster stockMaster = StockRepository.findById(batchId);
 
-        Bill.PurchaseItem item = new Bill.PurchaseItem(stockMaster);
+        Bill.PurchaseItem item = new Bill.PurchaseItem(stockMaster,rs.getInt("quantity"));
 
         item.setPurchaseId(rs.getInt("bill_item_id"));
         item.setBatchId(rs.getInt("batch_id"));

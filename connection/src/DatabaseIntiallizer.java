@@ -8,9 +8,10 @@ public final class DatabaseIntiallizer {
     public static void intiallizeTable(){
         createProductTable();
         createVariantTable();
-        createStockMasterTable();
-        createBillTable();
         createSupplier();
+        createBillTable();
+        createStockMasterTable();
+        createBillItemTable();
         createInventory();
     }
 
@@ -38,11 +39,11 @@ public final class DatabaseIntiallizer {
 
 private static void createSupplier() {
 String sql= """
-                
                     CREATE TABLE IF NOT EXISTS suppliers (
                         supplier_id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 10001) PRIMARY KEY,
                         name VARCHAR(100) NOT NULL,
                         contact VARCHAR(20) NOT NULL,
+                        state VARCHAR(20) NOT NULL,
                         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
                         updated_at TIMESTAMP
                     );

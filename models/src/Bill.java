@@ -37,16 +37,29 @@ public class Bill {
     }
 
 
-    public void addItem(StockMaster stockMaster) {
-        PurchaseItem purchaseItem = new PurchaseItem(stockMaster);
-        purchaseItemList.add(purchaseItem);
-        this.total = this.total.add(purchaseItem.netAmount);
+    public void addItem(StockMaster stockMaster, int qty) {
 
-        TaxCalulator calulator=new TaxCalulator(strategy);
-        this.taxAmount=calulator.applyTax(total);
-        this.finalAmout=this.total.add(taxAmount);
+        PurchaseItem purchaseItem = new PurchaseItem(stockMaster, qty);
+        purchaseItemList.add(purchaseItem);
+
+        this.total = this.total.add(purchaseItem.getNetAmount());
+
+        TaxCalulator cal = new TaxCalulator(strategy);
+        this.taxAmount = cal.applyTax(total);
+        this.finalAmout = total.add(taxAmount);
 
         this.modidfiedDate = new Date();
+    }
+
+    public void recalculateTotals() {
+        double total = 0;
+        for (PurchaseItem item : purchaseItemList) {
+            total += item.getNetAmount().getPrice();
+        }
+
+        this.total = new Money(total);
+        this.taxAmount = strategy.calulateGST(new Money(total));
+        this.finalAmout = new Money(total + taxAmount.getPrice());
     }
 
     public void setBillId(int billId) {
@@ -185,15 +198,15 @@ public class Bill {
         private LocalDate expireDate;
         private Money netAmount;
 
-        public PurchaseItem(StockMaster stockMaster) {
+        public PurchaseItem(StockMaster stockMaster, int qty) {
             this.batchId = stockMaster.getStockId();
-            this.quantity = stockMaster.getQuantity();
+            this.quantity = qty;
             this.sellingPrice = stockMaster.getSellingPrice();
             this.product = stockMaster.getVariant().getProduct();
             this.expireDate = stockMaster.getExpireDate();
             this.variant = stockMaster.getVariant();
-            this.mrp=stockMaster.getMrp();
-            this.netAmount = sellingPrice.mutiply(quantity);
+            this.mrp = stockMaster.getMrp();
+            this.netAmount = sellingPrice.mutiply(qty);
         }
 
 

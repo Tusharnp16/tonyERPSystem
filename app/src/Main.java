@@ -1,4 +1,3 @@
-import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -27,7 +26,6 @@ class Main {
             createVariant(newPrd);
         }
     }
-
 
     public static void createVariant(Product product) throws Exception {
         sc.nextLine();
@@ -110,15 +108,17 @@ class Main {
         System.out.println("Enter Supplier Name: ");
         String name = sc.nextLine();
 
+        System.out.println("Enter Supplier State: ");
+        String state = sc.nextLine();
+
         System.out.println("Enter Supplier contact number: ");
         String number = sc.nextLine();
 
-        Supplier supplier = new Supplier(name, number);
+        Supplier supplier = new Supplier(name, number,state);
         SupplierRepository.save(supplier);
 
         System.out.println("Supplier Added: " + supplier);
     }
-
 
     public static void createBill() throws Exception {
         sc.nextLine();
@@ -127,30 +127,31 @@ class Main {
         System.out.println("Select Supplier ID: ");
         int supplierId = safeInt();
 
+        Supplier supplier = SupplierRepository.findById(supplierId);
 
-            Supplier supplier = SupplierRepository.findById(supplierId);
+        if (supplier == null) {
+            System.out.println("Supplier does not exist.");
+            return;
+        }
 
-            if (supplier == null) {
-                System.out.println("Supplier does not exist.");
-                return;
-            }
 
-            System.out.println("Select GST: 1. IGST  |  2. CGST");
-            int g = sc.nextInt();
+        String supplierState= supplier.getState();
 
-            TaxStrategy tax = (g == 1) ? new IGSTStrategy() : new CGSTStrategy();
+        TaxStrategy tax = (supplierState.equalsIgnoreCase("GUJARAT") || supplierState.equalsIgnoreCase("GJ")) ? new CGSTStrategy() : new IGSTStrategy();
 
-            Bill bill = new Bill(supplier, tax);
-            BillRepository.save(bill);
+        Bill bill = new Bill(supplier, tax);
+        BillRepository.save(bill);
 
-            System.out.println("Bill Created: " + bill);
+        System.out.println("Bill Created: " + bill.getBillId());
 
-            addItemToBill(bill);
+        addItemToBill(bill);
 
     }
 
     public static void addItemToBill(Bill bill) throws Exception {
-        sc.nextLine();
+
+        System.out.println("DEBUG — Bill ID before saving item: " + bill.getBillId());
+
 
         StockRepository.display();
 
@@ -167,27 +168,23 @@ class Main {
         }
 
         StockMaster batch = storeInventory.getFirstBatch(variantId);
-        if (batch == null) {
-            System.out.println("No batch available.");
-            return;
-        }
-
         StockMaster fullBatch = StockRepository.findById(batch.getBatchId());
 
-        // Convert Item
-        Bill.PurchaseItem purchaseItem = convertToPurchaseItem(fullBatch, quantity);
+        bill.addItem(fullBatch, quantity);
 
-        // Save in object model
-        bill.addItem(fullBatch);
 
-        // Save in DB
-        BillItemRepository.save(bill.getBillId(), purchaseItem);
+        Bill.PurchaseItem item = bill.getPurchaseItemList().get(bill.getPurchaseItemList().size() - 1);
 
+
+        BillItemRepository.save(bill.getBillId(), item);
+        bill.recalculateTotals();
+        BillRepository.updateTotals(bill);
+        bill.display();
         System.out.println("Item added to bill.");
-        showBill();
+        Bill finalBill=BillRepository.findById(bill.getBillId());
+        System.out.println(finalBill.display());
+
     }
-
-
 
     public static void showBill() throws Exception {
         sc.nextLine();
@@ -201,7 +198,8 @@ class Main {
         System.out.println("3. Stock");
         System.out.println("4. Suppliers");
         System.out.println("5. Bills");
-        System.out.println("6. Inventory");
+        System.out.println("6. Bill Items");
+        System.out.println("7. Inventory");
 
         System.out.println("Enter Choice: ");
         int ch = sc.nextInt();
@@ -212,7 +210,8 @@ class Main {
             case 3 -> StockRepository.display();
             case 4 -> SupplierRepository.display();
             case 5 -> BillRepository.display();
-            case 6 -> storeInventory.printInventory();
+            case 6 -> BillItemRepository.display();
+            case 7 -> storeInventory.printInventory();
         }
     }
 
@@ -224,22 +223,6 @@ class Main {
                 System.out.print("Enter valid number: ");
             }
         }
-    }
-
-    private static Bill.PurchaseItem convertToPurchaseItem(StockMaster stock, int quantity) {
-
-        // Call your required constructor
-        Bill.PurchaseItem item = new Bill.PurchaseItem(stock);
-
-        // Fill additional fields
-        item.setQuantity(quantity);
-        item.setSellingPrice(stock.getSellingPrice());
-        item.setMrp(stock.getMrp());
-
-        double total = stock.getSellingPrice().getPrice() * quantity;
-        item.setNetAmount(new Money(total));
-
-        return item;
     }
 
 
