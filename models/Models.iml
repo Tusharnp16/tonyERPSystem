@@ -18,5 +18,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module" module-name="Exceptions" />
+    <orderEntry type="module" module-name="connection" />
   </component>
 </module>

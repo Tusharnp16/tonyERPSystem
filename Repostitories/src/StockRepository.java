@@ -21,6 +21,7 @@ public class StockRepository {
             if(rs.next()){
                 int id=rs.getInt("batch_id");
                 master.setBatchId(id);
+                insertIntoInventory(master, con);
             }
 
         }catch (Exception e){
@@ -28,46 +29,72 @@ public class StockRepository {
         }
     }
 
-//    public static Product findById(int id) {
-//        String sql = "SELECT * FROM products WHERE product_id = ?";
-//        try (Connection con = DBConnection.getConnection();
-//             PreparedStatement ps = con.prepareStatement(sql)) {
-//
-//            ps.setInt(1, id);
-//            ResultSet rs = ps.executeQuery();
-//
-//            if (rs.next()) {
-//                Product p = new Product(
-//                        rs.getString("name")
-//                );
-//                p.setProductId(rs.getInt("product_id"));
-//                p.setItemCode(rs.getString("item_code"));
-//                p.setCreatedAt(rs.getTimestamp("created_at"));
-//                return p;
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-//
-//    public static void display(){
-//        String sql="SELECT * FROM products";
-//
-//        try(Connection con=DBConnection.getConnection()){
-//            Statement stmt=con.createStatement();
-//            ResultSet rs= stmt.executeQuery(sql);
-//
-//            while (rs.next()){
-//                System.out.println(rs.getInt("product_id") + " | " + rs.getString("name") + " | "
-//                        + rs.getString("item_code") + " | " + rs.getString("created_at")
-//                        + " | " + rs.getString("modified_at"));
-//            }
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//    }
+    private static void insertIntoInventory(StockMaster master, Connection con) throws Exception {
+        String sql = "INSERT INTO inventory(batch_id, variant_id, expire_date, quantity) VALUES (?, ?, ?, ?)";
+        PreparedStatement pstmt = con.prepareStatement(sql);
+
+        pstmt.setInt(1, master.getBatchId());
+        pstmt.setInt(2, master.getVariant().getVariantId());
+        pstmt.setDate(3, java.sql.Date.valueOf(master.getExpireDate()));
+        pstmt.setInt(4, master.getQuantity());
+
+        pstmt.executeUpdate();
+    }
+
+
+    public static StockMaster findById(int batchId) {
+
+        String sql = "SELECT * FROM stock_master WHERE batch_id = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, batchId);
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.next()) return null;
+
+            int variantId = rs.getInt("variant_id");
+            Variant variant = VariantRepository.findById(variantId);
+
+
+            StockMaster master = new StockMaster(
+                    rs.getInt("quantity"),
+                    rs.getDate("expire_date").toLocalDate(),
+                    variant,
+                    new Money(rs.getDouble("mrp")),
+                    new Money(rs.getDouble("selling_price"))
+            );
+
+            master.setBatchId(rs.getInt("batch_id"));
+            return master;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching StockMaster with batch_id " + batchId, e);
+        }
+    }
+
+
+    public static void display(){
+        String sql="SELECT * FROM stock_master";
+
+        try(Connection con=DBConnection.getConnection()){
+            Statement stmt=con.createStatement();
+            ResultSet rs= stmt.executeQuery(sql);
+
+            while (rs.next()){
+                System.out.println(rs.getInt("batch_id") + " | " +
+                        rs.getInt("variant_id") + " | " +
+                        rs.getString("expire_date")
+                        + " | " + rs.getString("quantity")
+                        + " | " + rs.getDouble("mrp")
+                        + " | " + rs.getDouble("selling_price"));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 }

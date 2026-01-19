@@ -1,20 +1,10 @@
 import org.jetbrains.annotations.Nullable;
-
-import javax.lang.model.type.NullType;
-import java.rmi.MarshalledObject;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 class Main {
 
     private static final Scanner sc = new Scanner(System.in);
-    private static List<Product> productList = new ArrayList<>();
-    private static List<Variant> variantList = new ArrayList<>();
-    private static List<StockMaster> stockList = new ArrayList<>();
-    private static List<Supplier> supplierList = new ArrayList<>();
-    private static List<Bill> billList = new ArrayList<>();
     private static StoreInventory storeInventory = new StoreInventory();
 
     public static void createProduct() throws Exception {
@@ -28,39 +18,32 @@ class Main {
         }
 
         Product newPrd = new Product(prd);
-        productList.add(newPrd);
+        ProductRepository.save(newPrd);
 
-        try{
-            ProductRepository.save(newPrd);
-        }catch (Exception e){
-            System.out.println(e);
-        }
+        System.out.println("Product Added: " + newPrd);
 
-        System.out.println("Product Added : " + newPrd);
-
-        System.out.println("Wants to create variant of it? (Y/N)");
-        String s = sc.next();
-
-        if (s.toUpperCase().equals("Y")) {
+        System.out.println("Create variant of this product? (Y/N)");
+        if (sc.next().equalsIgnoreCase("Y")) {
             createVariant(newPrd);
         }
     }
 
-    public static void createVariant(Product prd) throws Exception {
+
+    public static void createVariant(Product product) throws Exception {
         sc.nextLine();
 
-        int id= prd==null? 0 : prd.getProductId();
+        Product selectedProduct = product;
 
-        Product selectedProduct=prd;
-
-        if(prd==null){
+        if (product == null) {
             ProductRepository.display();
-
-            System.out.println("Select Product Id : ");
-            id=sc.nextInt();
-            sc.nextLine();
-
+            System.out.println("Select Product Id: ");
+            int id = safeInt();
             selectedProduct = ProductRepository.findById(id);
+
+            if (selectedProduct == null) {
+                System.out.println("Product not found.");
+                return;
+            }
         }
 
         System.out.println("Enter Product Colour: ");
@@ -69,310 +52,168 @@ class Main {
         System.out.println("Enter Product Size: ");
         String size = sc.nextLine();
 
-       Variant newVariant = new Variant(color, size, selectedProduct);
-       variantList.add(newVariant);
+        Variant newVariant = new Variant(color, size, selectedProduct);
         VariantRepository.save(newVariant);
 
-        System.out.println("New Variant Added : " + newVariant);
+        System.out.println("Variant Added: " + newVariant);
 
-        System.out.println("Wants to create Stock of it? (Y/N)");
-        String s = sc.next();
-
-        if (s.toUpperCase().equals("Y")) {
+        System.out.println("Create stock for this variant? (Y/N)");
+        if (sc.next().equalsIgnoreCase("Y")) {
             createStock(newVariant);
         }
-
     }
 
-    public static void createStock(Variant variant) {
+    public static void createStock(Variant variant) throws Exception {
         sc.nextLine();
 
         Variant selectedVariant = variant;
-        int variantId=variant==null?0:variant.getVariantId();
 
-        if(selectedVariant==null) {
-            System.out.println("Select variant Id for Stock Generation : ");
-
+        if (selectedVariant == null) {
             VariantRepository.display();
-            variantId = safeInt();
+            System.out.println("Select Variant Id: ");
+            int id = safeInt();
+            selectedVariant = VariantRepository.findById(id);
 
-            selectedVariant=findVariantById(variantId);
-
-            if(selectedVariant==null){
-                System.out.println("Variant does not exitsts");
+            if (selectedVariant == null) {
+                System.out.println("Variant not found.");
                 return;
             }
         }
 
-        System.out.println("Enter Product Quantity: ");
+        System.out.println("Enter Quantity: ");
         int qty = sc.nextInt();
-
         sc.nextLine();
 
-        LocalDate today = LocalDate.now();
-        LocalDate exDate = today.plusDays(15);
+        LocalDate exDate = LocalDate.now().plusDays(15);
 
+        System.out.println("Enter MRP: ");
+        double mrp = sc.nextDouble();
 
-        System.out.println("Enter Product MRP: ");
-        Double mrp = sc.nextDouble();
-
-        System.out.println("Enter Product Selling price: ");
-        Double sellingPrice = sc.nextDouble();
+        System.out.println("Enter Selling Price: ");
+        double sellingPrice = sc.nextDouble();
 
         if (sellingPrice > mrp) {
-
-            System.out.println("Selling price cant more than actual MRP");
+            System.out.println("Selling price cannot exceed MRP.");
             return;
         }
 
-        Money newMrp = new Money(mrp);
-        Money newSellingPrice = new Money(sellingPrice);
+        StockMaster stock = new StockMaster(qty, exDate, selectedVariant, new Money(mrp), new Money(sellingPrice));
+        StockRepository.save(stock);
+        storeInventory.addStock(stock);
 
-        try {
-            StockMaster newStock = new StockMaster(qty, exDate, selectedVariant, newMrp, newSellingPrice);
-            stockList.add(newStock);
-            storeInventory.addStock(newStock);
-            StockRepository.save(newStock);
-            System.out.println("Inventory Updated : " + newStock);
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+        System.out.println("Stock batch created: " + stock);
     }
 
-    public static void createBill() {
+    public static void createSupplier() throws Exception {
         sc.nextLine();
 
-        //    Supplier supplier = supplierList.get(0);
+        System.out.println("Enter Supplier Name: ");
+        String name = sc.nextLine();
 
-        for (Supplier s : supplierList) {
-            System.out.println(s);
-        }
+        System.out.println("Enter Supplier contact number: ");
+        String number = sc.nextLine();
 
-        System.out.println("Select Supplier : ");
-        int index = safeInt() - 1;
+        Supplier supplier = new Supplier(name, number);
+        SupplierRepository.save(supplier);
 
-        if (index < 0 || index >= supplierList.size()) {
-            System.out.println("Invalid Supplier");
-            return;
-        }
-
-        System.out.println("Select GST Method : ");
-        System.out.println("1.IGST \n2.CGST ");
-        int gst = sc.nextInt();
-
-        TaxStrategy strategy;
-
-        if (gst == 1) {
-            strategy = new IGSTStrategy();
-        } else {
-            strategy = new CGSTStrategy();
-        }
-
-        Supplier s = supplierList.get(index);
-
-        Bill bill = new Bill(s, strategy);
-        billList.add(bill);
-
-        addItemToBill();
+        System.out.println("Supplier Added: " + supplier);
     }
 
-    public static void addItemToBill() {
+
+    public static void createBill() throws Exception {
         sc.nextLine();
 
-        if (billList.isEmpty()) {
-            System.out.println("Bill list is empty");
-            return;
-        }
+        SupplierRepository.display();
+        System.out.println("Select Supplier ID: ");
+        int supplierId = safeInt();
 
-        System.out.println("Available Bills");
 
-        for (Bill b : billList) {
-            System.out.println("Bill Id : " + b.getBillId() + " Supplier Name : " + b.getSupplierName() + " Supplier Contact : " + b.getSupplieContact());
-        }
+            Supplier supplier = SupplierRepository.findById(supplierId);
 
-        System.out.print("Choose Bill ID: ");
-        int bIndex = safeInt() - 1;
+            if (supplier == null) {
+                System.out.println("Supplier does not exist.");
+                return;
+            }
 
-        if (bIndex < 0 || bIndex >= billList.size()) {
-            System.out.println("Invalid Bill.");
-            return;
-        }
+            System.out.println("Select GST: 1. IGST  |  2. CGST");
+            int g = sc.nextInt();
 
-        Bill bill = billList.get(bIndex);
+            TaxStrategy tax = (g == 1) ? new IGSTStrategy() : new CGSTStrategy();
 
-        System.out.println("Available Stock:");
-        for (int i = 0; i < stockList.size(); i++) {
-            System.out.println((i + 1) + ". " + stockList.get(i));
-        }
+            Bill bill = new Bill(supplier, tax);
+            BillRepository.save(bill);
 
-        System.out.println("Enter Variant Id : ");
+            System.out.println("Bill Created: " + bill);
+
+            addItemToBill(bill);
+
+    }
+
+    public static void addItemToBill(Bill bill) throws Exception {
+        sc.nextLine();
+
+        StockRepository.display();
+
+        System.out.println("Enter Variant ID: ");
         int variantId = sc.nextInt();
 
-        System.out.println("Enter Quantity : ");
+        System.out.println("Enter Quantity: ");
         int quantity = sc.nextInt();
 
-        addItemToBill(bill, variantId, quantity);
-    }
-
-    public static void addItemToBill(Bill bill, int variantId, int quantity) {
-
-        try {
-            boolean ans = storeInventory.deductStockFEFO(variantId, quantity);
-
-            if (!ans) {
-                System.out.println("Insufficent Stock");
-                return;
-            }
-
-            StockMaster firstBatch = storeInventory.getFirstBatch(variantId);
-            if (firstBatch == null) {
-                System.out.println("No Stock avilable");
-                return;
-            }
-
-            StockMaster finalBatch = new StockMaster(firstBatch.getQuantity(), firstBatch.getExpireDate(), firstBatch.getVariant(), firstBatch.getMrp(), firstBatch.getSellingPrice());
-
-            bill.addItem(finalBatch);
-            System.out.println("Bill Generated");
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-
-        showBill();
-
-    }
-
-    public static void showBill() {
-        sc.nextLine();
-
-        if (billList.isEmpty()) {
-            System.out.println("No bills found.");
+        boolean ok = storeInventory.deductStockFEFO(variantId, quantity);
+        if (!ok) {
+            System.out.println("Insufficient stock.");
             return;
         }
 
-        System.out.println("Available Bills:");
-        for (int i = 0; i < billList.size(); i++) {
-            System.out.println((i + 1) + ". Bill " + billList.get(i).display());
+        StockMaster batch = storeInventory.getFirstBatch(variantId);
+        if (batch == null) {
+            System.out.println("No batch available.");
+            return;
         }
 
-//        System.out.print("Choose Bill to Display: ");
-//        int index = safeInt() - 1;
-//
-//        if (index < 0 || index >= billList.size()) {
-//            System.out.println("Invalid selection.");
-//            return;
-//        }
-//
-//        System.out.println(billList.get(index).display());
+        StockMaster fullBatch = StockRepository.findById(batch.getBatchId());
 
+        // Convert Item
+        Bill.PurchaseItem purchaseItem = convertToPurchaseItem(fullBatch, quantity);
+
+        // Save in object model
+        bill.addItem(fullBatch);
+
+        // Save in DB
+        BillItemRepository.save(bill.getBillId(), purchaseItem);
+
+        System.out.println("Item added to bill.");
+        showBill();
+    }
+
+
+
+    public static void showBill() throws Exception {
+        sc.nextLine();
+
+        BillRepository.display();
     }
 
     public static void displayAll() {
+        System.out.println("1. Products");
+        System.out.println("2. Variants");
+        System.out.println("3. Stock");
+        System.out.println("4. Suppliers");
+        System.out.println("5. Bills");
+        System.out.println("6. Inventory");
 
-        sc.nextLine();
-
-        System.out.println("1.Product List");
-        System.out.println("2.Variant List");
-        System.out.println("3.Stock Master List");
-        System.out.println("4.Bill List");
-        System.out.println("3.Inventory List");
-
-        System.out.println("Enter Choice : ");
+        System.out.println("Enter Choice: ");
         int ch = sc.nextInt();
 
-        if (ch == 1) {
-            ProductRepository.display();
-        } else if (ch == 2) {
-            VariantRepository.display();
-        } else if (ch == 3) {
-            if (productList.isEmpty()) {
-                System.out.println("No Stock Avilable");
-            } else {
-                for (StockMaster s : stockList) {
-                    System.out.println(s);
-                }
-            }
-        } else if (ch == 4) {
-            if (billList.isEmpty()) {
-                System.out.println("No Bill Avilable");
-            } else {
-                for (Bill b : billList) {
-                    System.out.println(b.display());
-                }
-            }
-        } else if (ch == 5) {
-            storeInventory.printInventory();
+        switch (ch) {
+            case 1 -> ProductRepository.display();
+            case 2 -> VariantRepository.display();
+            case 3 -> StockRepository.display();
+            case 4 -> SupplierRepository.display();
+            case 5 -> BillRepository.display();
+            case 6 -> storeInventory.printInventory();
         }
-
-    }
-
-    public static void searchItems() {
-
-        sc.nextLine();
-
-        System.out.println("1.Product Find");
-        System.out.println("2.Variant Find");
-        System.out.println("3.Stock Find");
-
-        System.out.println("Enter Choice : ");
-        int ch = sc.nextInt();
-
-        int id = safeInt();
-
-        if (ch == 1) {
-            try (Product p = findProductById(id);) {
-                System.out.println(p);
-            } catch (Exception e) {
-                System.out.println("Product Does not Exists");
-            }
-        }
-        if (ch == 2) {
-
-            Variant v=findVariantById(id);
-            if(v!=null){
-                System.out.println(v);
-            }else{
-                System.out.println("Variant Does not exists");
-            }
-
-        }
-        if (ch == 3) {
-           StockMaster s=findStockById(id);
-            if(s!=null){
-                System.out.println(s);
-            }else{
-                System.out.println("Stock Does not exists");
-            }
-        }
-    }
-
-    private static Product findProductById(int id) throws Exception {
-        for (Product p : productList) {
-            if (p.getProductId() == id) {
-                return p;
-            }
-        }
-        throw new Exception("Product does not exists");
-    }
-
-    private static Variant findVariantById(int id){
-        for (Variant v : variantList) {
-            if (v.getVariantId() == id) {
-                return v;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private static StockMaster findStockById(int id){
-        for (StockMaster s : stockList) {
-            if (s.getStockId() == id) {
-                return s;
-            }
-        }
-        return null;
     }
 
     public static int safeInt() {
@@ -385,46 +226,53 @@ class Main {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    private static Bill.PurchaseItem convertToPurchaseItem(StockMaster stock, int quantity) {
 
-        supplierList.add(new Supplier("Tony Textile", "7984569840"));
-        supplierList.add(new Supplier("Hardik Raw Menu factoring Unit", "1234567890"));
+        // Call your required constructor
+        Bill.PurchaseItem item = new Bill.PurchaseItem(stock);
+
+        // Fill additional fields
+        item.setQuantity(quantity);
+        item.setSellingPrice(stock.getSellingPrice());
+        item.setMrp(stock.getMrp());
+
+        double total = stock.getSellingPrice().getPrice() * quantity;
+        item.setNetAmount(new Money(total));
+
+        return item;
+    }
+
+
+    public static void main(String[] args) throws Exception {
 
         DatabaseIntiallizer.intiallizeTable();
 
-        int ch;
-
         while (true) {
-            System.out.println("Tony ERP System");
+            System.out.println("\nTony ERP System");
             System.out.println("1. Create Product");
             System.out.println("2. Create Variant");
             System.out.println("3. Create Stock Batch");
-            System.out.println("4. Create Bill");
-            System.out.println("5. Add Item to Bill");
-            System.out.println("7. Display All");
-            System.out.println("8. Search Item");
-            System.out.println("9. Exit");
-            System.out.print("Choose option: ");
-            ch = sc.nextInt();
+            System.out.println("4. Create Supplier");
+            System.out.println("5. Create Bill");
+            System.out.println("6. Display All");
+            System.out.println("7. Exit");
+            System.out.print("Choose: ");
+
+            int ch = sc.nextInt();
+
             switch (ch) {
                 case 1 -> createProduct();
                 case 2 -> createVariant(null);
                 case 3 -> createStock(null);
-                case 4 -> createBill();
-                case 5 -> addItemToBill();
-                case 6 -> showBill();
-                case 7 -> displayAll();
-                case 8 ->searchItems();
-
-                case 9 -> {
+                case 4 -> createSupplier();
+                case 5 -> createBill();
+                case 6 -> displayAll();
+                case 7 -> {
                     System.out.println("Exiting...");
                     return;
                 }
                 default -> System.out.println("Invalid option.");
-
             }
         }
     }
 }
-
-
